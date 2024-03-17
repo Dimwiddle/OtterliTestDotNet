@@ -64,8 +64,6 @@ namespace OtterliAPI
         public async Task<HttpResponseMessage> APIHealthCheck()
         {
             var response = await client.GetAsync($"{host}/health");
-            // var content = await response.Content.ReadAsStringAsync();
-            // dynamic json = JsonConvert.DeserializeObject(content);
             return response;
         }
 
