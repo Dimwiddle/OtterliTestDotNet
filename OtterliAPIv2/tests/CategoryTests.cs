@@ -58,7 +58,7 @@ public class CategoryTests
     [Test]
     public async Task APIVersion(){
         API temp_client = new API(token, version: "0.1");
-        var response = await temp_client.sendGETRequest("GET", "vendors");
+        var response = await temp_client.sendGETRequest("GET", "categories");
         Assert.That((int)response.StatusCode, Is.EqualTo(406));
     }
 
