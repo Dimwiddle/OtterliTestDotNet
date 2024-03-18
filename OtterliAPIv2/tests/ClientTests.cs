@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace APIClientv2;
 
-
+[TestFixture]
 public class ClientTests
 {
     private API otr_api;

@@ -11,6 +11,7 @@ public class CategoryTests
 
     
     private API otr_api;
+    private string token;
     private dynamic body;
 
     private dynamic categorySample;
@@ -21,8 +22,8 @@ public class CategoryTests
     public async Task Setup()
     {
         DotNetEnv.Env.TraversePath().Load();
-        string token = Environment.GetEnvironmentVariable("API_TOKEN");
-        otr_api = new API(token);
+        this.token = Environment.GetEnvironmentVariable("API_TOKEN");
+        otr_api = new API(this.token);
         this.response = await otr_api.sendGETRequest("GET", "categories");
         this.body = await otr_api.GetResponseContent();
         this.categorySample = body.results[0];
@@ -49,6 +50,16 @@ public class CategoryTests
         API temp_client = new API();
         var response = await temp_client.sendGETRequest("GET", "categories");
         Assert.That((int)response.StatusCode, Is.EqualTo(401));
+    }
+
+    /// <summary>
+    /// Testing the GET /categories endpoint's versioning.
+    /// </summary>
+    [Test]
+    public async Task APIVersion(){
+        API temp_client = new API(token, version: "0.1");
+        var response = await temp_client.sendGETRequest("GET", "vendors");
+        Assert.That((int)response.StatusCode, Is.EqualTo(406));
     }
 
     /// <summary>
