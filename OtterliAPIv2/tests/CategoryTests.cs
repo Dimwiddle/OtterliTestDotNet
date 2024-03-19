@@ -112,7 +112,7 @@ public class CategoryTests
     /// </summary>
     [Test]
     public async Task CategoryIcons(){
-        var response = await otr_api.sendGETRequest("GET", "categories", new Dictionary<string, object> {{"icons", true}});
+        var response = await otr_api.sendGETRequest("GET", "categories", new Dictionary<string, string> {{"icons", "true"}});
         var body = await otr_api.GetResponseContent();
         Assert.IsTrue(response.IsSuccessStatusCode);
         Assert.That(body.count, Is.InstanceOf<int>());

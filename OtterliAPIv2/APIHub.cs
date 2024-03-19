@@ -30,7 +30,7 @@ namespace OtterliAPI
         /// <param name="endpoint"></param>
         /// <param name="queryParams"></param>
         /// <returns>HttpResponse</returns>
-        public async Task<HttpResponseMessage> sendGETRequest(string method, string endpoint, Dictionary<string, object> queryParams = null)
+        public async Task<HttpResponseMessage> sendGETRequest(string method, string endpoint, Dictionary<string, string> queryParams = null)
         {
             var queryString = "";
             if (queryParams != null)

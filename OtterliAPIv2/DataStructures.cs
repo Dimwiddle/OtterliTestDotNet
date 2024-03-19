@@ -3,14 +3,14 @@ using Newtonsoft.Json;
 public record ProductRecord (
     [JsonProperty("id")] string Id,
     [JsonProperty("name")] string Name,
-    [JsonProperty("vegan")] bool Vegan,
+    [JsonProperty("vegan")] bool? Vegan,
     [JsonProperty("active")] bool Active,
-    [JsonProperty("categories")] List<object> Categories,
-    [JsonProperty("countries")] List<object> Countries,
-    [JsonProperty("vendors")] List<object> Vendors,
+    [JsonProperty("categories")] List<CategoryRecord> Categories,
+    [JsonProperty("countries")] List<CountryRecord> Countries,
+    [JsonProperty("vendors")] List<ProductVendorRecord> Vendors,
     [JsonProperty("date_added")] string DateAdded,
     [JsonProperty("last_updated_date")] string LastUpdatedDate,
-    [JsonProperty("reviews")] object Reviews
+    [JsonProperty("reviews")] ProductReviewRecord Reviews
 );
 
 public record ProductDetailRecord (
@@ -19,22 +19,22 @@ public record ProductDetailRecord (
     [JsonProperty("vegan")] bool Vegan,
     [JsonProperty("active")] bool Active,
     [JsonProperty("categories")] object Categories,
-    [JsonProperty("countries")] object Countries,
+    [JsonProperty("countries")] List<CountryRecord> Countries,
     [JsonProperty("vendors")] List<ProductVendorRecord> Vendors,
-    [JsonProperty("reviews")] object Reviews,
+    [JsonProperty("reviews")] ProductReviewRecord Reviews,
     [JsonProperty("description")] string Description,
     [JsonProperty("image")] string Image,
-    [JsonProperty("gtin")] string Gtin,
-    [JsonProperty("unit")] string Unit,
-    [JsonProperty("price")] string Price,
+    [JsonProperty("gtin")] string? Gtin,
+    [JsonProperty("unit")] string? Unit,
+    [JsonProperty("price")] string? Price,
     [JsonProperty("last_updated_date")] string LastUpdatedDate,
     [JsonProperty("date_added")] string DateAdded
 );
 
 public record ProductVendorRecord (
     [JsonProperty("name")] string Name,
-    [JsonProperty("logo")] string Logo,
-    [JsonProperty("logo_svg")] string LogoSvg,
+    [JsonProperty("logo")] string? Logo,
+    [JsonProperty("logo_svg")] string? LogoSvg,
     [JsonProperty("price")] double Price,
     [JsonProperty("country")] string Country,
     [JsonProperty("currency")] string Currency,
@@ -43,20 +43,25 @@ public record ProductVendorRecord (
     [JsonProperty("last_updated_date")] string LastUpdatedDate
 );
 
-public enum CategoryRecord {
-    id,
-    name,
-    icon_svg,
-    date_added,
-    last_updated_date
-}
+public record CountryRecord (
+    [JsonProperty("code")] string CountryCode
+);
 
-public enum VendorEnum {
-    id,
-    name,
-    logo,
-    logo_svg,
-    country,
-    date_added,
-    last_updated_date
-}
+public record ProductReviewRecord(
+    [JsonProperty("avg_rating")] double? AvgRating,
+    [JsonProperty("rating_count")] int? ReviewCount
+);
+
+public record CategoryRecord (
+    [JsonProperty("name")] string Name,
+    [JsonProperty("id")] string Id,
+    [JsonProperty("icon_svg")] string? IconSvg
+);
+
+public record VendorRecord (
+    [JsonProperty("id")] string Id,
+    [JsonProperty("name")] string Name,
+    [JsonProperty("logo")] string? Logo,
+    [JsonProperty("logo_svg")] string? LogoSvg,
+    [JsonProperty("country")] string Country
+);

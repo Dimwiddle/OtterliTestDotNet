@@ -2,6 +2,9 @@ using OtterliAPI;
 using APIShortcuts;
 using System.Reflection;
 using Newtonsoft.Json;
+using System.Security.Principal;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Nodes;
 
 namespace Products;
 
@@ -131,6 +134,45 @@ public class ProductSearch {
         Assert.That(response.IsSuccessStatusCode, Is.True);
         var body = await otrAPI.GetResponseContent();
         Assert.That(body.count, Is.EqualTo(1));
+        string foundProduct = body.results[0].id;
+        Assert.That(foundProduct, Is.EqualTo(product.Id));
     }
+
+}
+
+[TestFixture]
+public class ProductQueryParams {
+
+    private API otrAPI;
+
+    private ShortcutsAPI shortcutsAPI;
+
+    [OneTimeSetUp]
+    public void Setup(){
+        DotNetEnv.Env.TraversePath().Load();
+        string token = Environment.GetEnvironmentVariable("API_TOKEN");
+        otrAPI = new API(token);
+        shortcutsAPI = new ShortcutsAPI();
+    }
+
+    [Test]
+    public async Task ByCountryCode(){
+        Dictionary<string, string> parameters = new Dictionary<string, string>{{"country_code", "GB"}};
+        ResponseContent responseContent = await shortcutsAPI.getProducts(parameters);
+        List<ProductRecord> products = shortcutsAPI.serializeProductList(responseContent.results);
+        CountryRecord expectedCountryCode = new CountryRecord("GB");
+        while (responseContent.next != null){
+            
+            foreach (var product in products){
+                Assert.That(product.Countries, Does.Contain(expectedCountryCode));
+            }
+            string nextURL = responseContent.next.Replace(otrAPI.host + "/", "");
+            await otrAPI.sendGETRequest("GET", nextURL);
+            responseContent = await otrAPI.GetResponseContent();
+            products = shortcutsAPI.serializeProductList(responseContent.results);
+        }
+        
+    }
+    
 
 }

@@ -121,6 +121,6 @@ public class VendorTests{
         // aggregate unique vendor ids
         // get active vendors from /vendors endpoint
         // check that all vendor ids from products are in the active vendors
-        var activeVendorsResponse = await otr_api.sendGETRequest("GET", "vendors", new Dictionary<string, object> {{"active", true}});
+        var activeVendorsResponse = await otr_api.sendGETRequest("GET", "vendors", new Dictionary<string, string> {{"active", "true"}});
     }
 }

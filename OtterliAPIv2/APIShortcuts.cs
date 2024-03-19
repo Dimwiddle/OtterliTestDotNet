@@ -29,7 +29,7 @@ public class ShortcutsAPI {
     /// Returns a list of vendors with available products to be searched.
     /// </summary>
     public async Task<ResponseContent> getActiveVendors() {
-        var response = await this.otr_api.sendGETRequest("GET", "vendors", new Dictionary<string, object> {{"active", true}});
+        var response = await this.otr_api.sendGETRequest("GET", "vendors", new Dictionary<string, string> {{"active", "true"}});
         return await this.otr_api.GetResponseContent();
     }
 
@@ -44,6 +44,25 @@ public class ShortcutsAPI {
         var productResponse = await this.otr_api.sendGETRequest("GET", $"products/{product.id}");
         string productdDetail = await productResponse.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<ProductDetailRecord>(productdDetail);
+    }
+
+    /// <summary>
+    /// Returns a list of products from the vegan cube, for the given query parameters.
+    /// </summary>
+    /// <param name="parameters"></param>
+    public async Task<ResponseContent> getProducts(Dictionary<string, string> parameters = null){
+        await otr_api.sendGETRequest("GET", "products/", parameters);
+        return await otr_api.GetResponseContent();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="responseResults"></param>
+    public List<ProductRecord> serializeProductList(List<object> responseResults){
+        string json = JsonConvert.SerializeObject(responseResults);
+        List<ProductRecord> products = JsonConvert.DeserializeObject<List<ProductRecord>>(json);
+        return products;
     }
    
 }   
