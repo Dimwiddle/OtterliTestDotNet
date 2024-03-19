@@ -51,7 +51,9 @@ public class ShortcutsAPI {
     /// </summary>
     /// <param name="parameters"></param>
     public async Task<ResponseContent> getProducts(Dictionary<string, string> parameters = null){
-        await otr_api.sendGETRequest("GET", "products/", parameters);
+        // add a method to get all products from the given parameters
+        var response = await otr_api.sendGETRequest("GET", "products/", parameters);
+        Assert.That(response.IsSuccessStatusCode, "GET products - Response was not successful");
         return await otr_api.GetResponseContent();
     }
 

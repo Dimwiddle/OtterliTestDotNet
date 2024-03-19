@@ -18,7 +18,7 @@ public record ProductDetailRecord (
     [JsonProperty("name")] string Name,
     [JsonProperty("vegan")] bool Vegan,
     [JsonProperty("active")] bool Active,
-    [JsonProperty("categories")] object Categories,
+    [JsonProperty("categories")] List<CategoryRecord> Categories,
     [JsonProperty("countries")] List<CountryRecord> Countries,
     [JsonProperty("vendors")] List<ProductVendorRecord> Vendors,
     [JsonProperty("reviews")] ProductReviewRecord Reviews,
@@ -54,7 +54,7 @@ public record ProductReviewRecord(
 
 public record CategoryRecord (
     [JsonProperty("name")] string Name,
-    [JsonProperty("id")] string Id,
+    [JsonProperty("otterli_id")] string Id,
     [JsonProperty("icon_svg")] string? IconSvg
 );
 

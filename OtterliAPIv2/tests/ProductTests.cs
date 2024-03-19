@@ -141,7 +141,7 @@ public class ProductSearch {
 }
 
 [TestFixture]
-public class ProductQueryParams {
+public class ProductFilterParams {
 
     private API otrAPI;
 
@@ -173,6 +173,131 @@ public class ProductQueryParams {
         }
         
     }
+
+    [Test]
+    public async Task ByCategory(){
+        ProductDetailRecord productSample = await shortcutsAPI.getProductSample();
+        CategoryRecord expectedCategory = productSample.Categories.First();
+        Dictionary<string, string> parameters = new Dictionary<string, string>{{"category", expectedCategory.Id}};
+        ResponseContent responseContent = await shortcutsAPI.getProducts(parameters);
+        List<ProductRecord> products = shortcutsAPI.serializeProductList(responseContent.results);
+
+        while (responseContent.next != null){
+            foreach (ProductRecord product in products){
+                Assert.That(product.Categories.Contains(expectedCategory));
+            }
+            string nextURL = responseContent.next.Replace(otrAPI.host + "/", "");
+            await otrAPI.sendGETRequest("GET", nextURL);
+            responseContent = await otrAPI.GetResponseContent();
+            products = shortcutsAPI.serializeProductList(responseContent.results);
+        }
+    }
+
+    [Test]
+    public async Task ByAvailability(){
+            Dictionary<string, string> parameters = new Dictionary<string, string>{{"available", "false"}};
+            ResponseContent responseContent = await shortcutsAPI.getProducts(parameters);
+            List<ProductRecord> products = shortcutsAPI.serializeProductList(responseContent.results);
+            while (responseContent.next != null){
+                foreach (ProductRecord product in products){
+                    Assert.That(product.Active, Is.False);
+                }
+            string nextURL = responseContent.next.Replace(otrAPI.host + "/", "");
+            await otrAPI.sendGETRequest("GET", nextURL);
+            responseContent = await otrAPI.GetResponseContent();
+            products = shortcutsAPI.serializeProductList(responseContent.results);
+        }
+    }
+
+    [Test]
+    public async Task ByVendor(){
+        ResponseContent response = await shortcutsAPI.getProducts();
+        ProductRecord productSample = shortcutsAPI.serializeProductList(response.results).First();
+        ProductVendorRecord vendor = productSample.Vendors.First();
+        Dictionary<string, string> parameters = new Dictionary<string, string>{{"vendor", vendor.Name}};
+        ResponseContent responseContent = await shortcutsAPI.getProducts(parameters);
+        List<ProductRecord> products = shortcutsAPI.serializeProductList(responseContent.results);
+        while (responseContent.next != null){
+            foreach (ProductRecord product in products){
+                Assert.That(product.Vendors.Contains(vendor));
+            }
+            string nextURL = responseContent.next.Replace(otrAPI.host + "/", "");
+            await otrAPI.sendGETRequest("GET", nextURL);
+            responseContent = await otrAPI.GetResponseContent();
+            products = shortcutsAPI.serializeProductList(responseContent.results);
+        }
+    }
     
+    [Test]
+    public async Task BySelectProducts(){
+        ResponseContent response = await shortcutsAPI.getProducts();
+        List<ProductRecord> products = shortcutsAPI.serializeProductList(response.results);
+        ProductRecord productSample1 = products.First();
+        ProductRecord productSample2 = products.Last();
+        Dictionary<string, string> parameters = new Dictionary<string, string>{{"select", $"{productSample1.Id},{productSample2.Id}"}};
+        ResponseContent responseContent = await shortcutsAPI.getProducts(parameters);
+        List<ProductRecord> selectedProducts = shortcutsAPI.serializeProductList(responseContent.results);
+        Assert.That(selectedProducts.Count, Is.EqualTo(2));
+        List<string> actualSelectedIds = selectedProducts.Select(p => p.Id).ToList();
+        List<string> expectedSelectedIds = new List<string>{productSample1.Id, productSample2.Id};
+        Assert.That(actualSelectedIds, Is.EquivalentTo(expectedSelectedIds));
+    }
+
+}
+
+[TestFixture]
+public class ProductOrdering {
+
+    private API otrAPI;
+
+    private ShortcutsAPI shortcutsAPI = new ShortcutsAPI();
+
+    public ProductOrdering(){
+        DotNetEnv.Env.TraversePath().Load();
+        string token = Environment.GetEnvironmentVariable("API_TOKEN");
+        this.otrAPI = new API(token);
+    }
+
+    [Test]
+    public async Task ByDate(){
+        List<string> dateOrder = new List<string>{"-date_added", "date_added"};
+        List<(string, bool)> testResults = new List<(string, bool)>();
+        bool isAscending = false;
+        bool isDescending = false;
+        foreach (string order in dateOrder){
+            Dictionary<string, string> parameters = new Dictionary<string, string>{{"ordering", order}};
+            ResponseContent response = await shortcutsAPI.getProducts(parameters);
+            List<ProductRecord> products = shortcutsAPI.serializeProductList(response.results);
+            List<DateTime> dates = products.Select(p => DateTime.Parse(p.DateAdded)).ToList();
+            if (order == "-date_added"){
+                isDescending = dates.Zip(dates.Skip(1), (a, b) => a.CompareTo(b) >= 0).All(x => x);
+            } else {
+                isAscending = dates.Zip(dates.Skip(1), (a, b) => a.CompareTo(b) <= 0).All(x => x);
+            }
+        }
+        Assert.That(isAscending);
+        Assert.That(isDescending);
+    }
+
+    [Test]
+    public async Task ByRating(){
+        List<string> ratingOrder = new List<string>{"-rating", "rating"};
+        List<(string, bool)> testResults = new List<(string, bool)>();
+        bool isAscending = false;
+        bool isDescending = false;
+        foreach (string order in ratingOrder){
+            Dictionary<string, string> parameters = new Dictionary<string, string>{{"ordering", order}};
+            ResponseContent response = await shortcutsAPI.getProducts(parameters);
+            List<ProductRecord> products = shortcutsAPI.serializeProductList(response.results);
+            List<double?> ratings = products.Select(p => p.Reviews.AvgRating).ToList();
+            if (order == "-rating"){
+                isDescending = ratings.Zip(ratings.Skip(1), (a, b) => (a?.CompareTo(b) ?? 1) >= 0).All(x => x);
+            } else {
+                isAscending = ratings.Zip(ratings.Skip(1), (a, b) => (a?.CompareTo(b) ?? -1) <= 0).All(x => x);
+            }
+        }
+        Assert.That(isAscending);
+        Assert.That(isDescending);
+    }
 
 }
