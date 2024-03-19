@@ -301,3 +301,43 @@ public class ProductOrdering {
     }
 
 }
+
+public class CustomEndpoints{
+    private API otrAPI;
+
+    private ShortcutsAPI shortcutsAPI = new ShortcutsAPI();
+
+    public CustomEndpoints(){
+        DotNetEnv.Env.TraversePath().Load();
+        string token = Environment.GetEnvironmentVariable("API_TOKEN");
+        this.otrAPI = new API(token);
+    }
+
+    [Test]
+    public async Task ComingSoon(){
+        HttpResponseMessage response = await otrAPI.sendGETRequest("GET", "coming_soon");
+        Assert.That(response.IsSuccessStatusCode);
+        ResponseContent responseContent = await otrAPI.GetResponseContent();
+        Assert.That(responseContent.previous, Is.Null);
+        Assert.That(responseContent.results, Is.Not.Null);
+        Assert.That(responseContent.count, Is.Not.Null);
+    }
+
+    [Test]
+    public async Task RecommendedProducts(){
+        HttpResponseMessage response = await otrAPI.sendGETRequest("GET", "recommended_products");
+        Assert.That(response.IsSuccessStatusCode);
+        ResponseContent responseContent = await otrAPI.GetResponseContent();
+        Assert.That(responseContent.previous, Is.Null);
+        Assert.That(responseContent.results, Is.Not.Null);
+    }
+
+    [Test]
+    public async Task LatestProducts(){
+        HttpResponseMessage response = await otrAPI.sendGETRequest("GET", "latest_products");
+        Assert.That(response.IsSuccessStatusCode);
+        ResponseContent responseContent = await otrAPI.GetResponseContent();
+        Assert.That(responseContent.previous, Is.Null);
+        Assert.That(responseContent.results, Is.Not.Empty);
+    }
+}
