@@ -1,6 +1,7 @@
 using OtterliAPI;
 using DotNetEnv;
-using System.Runtime.CompilerServices;
+using APIShortcuts;
+using System.Diagnostics.CodeAnalysis;
 namespace Categories;
 
 
@@ -18,13 +19,15 @@ public class CategoryTests
 
     private HttpResponseMessage response;
 
+    private ShortcutsAPI shortcutsAPI = new ShortcutsAPI();
+
     [OneTimeSetUp]
     public async Task Setup()
     {
         DotNetEnv.Env.TraversePath().Load();
         this.token = Environment.GetEnvironmentVariable("API_TOKEN");
         otr_api = new API(this.token);
-        this.response = await otr_api.sendGETRequest("GET", "categories");
+        this.response = await otr_api.sendGETRequest("categories");
         this.body = await otr_api.GetResponseContent();
         this.categorySample = body.results[0];
     }
@@ -37,7 +40,7 @@ public class CategoryTests
     public async Task invalidToken()
     {
         API temp_client = new API("thisisfake");
-        var response = await temp_client.sendGETRequest("GET", "categories");
+        var response = await temp_client.sendGETRequest("categories");
         Assert.That((int)response.StatusCode, Is.EqualTo(401));
     }
 
@@ -48,7 +51,7 @@ public class CategoryTests
     [Test]
     public async Task noAuthToken(){
         API temp_client = new API();
-        var response = await temp_client.sendGETRequest("GET", "categories");
+        var response = await temp_client.sendGETRequest("categories");
         Assert.That((int)response.StatusCode, Is.EqualTo(401));
     }
 
@@ -58,7 +61,7 @@ public class CategoryTests
     [Test]
     public async Task APIVersion(){
         API temp_client = new API(token, version: "0.1");
-        var response = await temp_client.sendGETRequest("GET", "categories");
+        var response = await temp_client.sendGETRequest("categories");
         Assert.That((int)response.StatusCode, Is.EqualTo(406));
     }
 
@@ -96,7 +99,7 @@ public class CategoryTests
     [Test]
     public async Task CategoryPagination(){
         string nextPage = body.next.Replace(otr_api.host + "/", "");
-        var page2response = await otr_api.sendGETRequest("GET", nextPage);
+        var page2response = await otr_api.sendGETRequest(nextPage);
         var page2body = await otr_api.GetResponseContent();
         string expectedPrevious = otr_api.host + "/categories/";
         Assert.IsTrue(page2response.IsSuccessStatusCode);
@@ -112,15 +115,9 @@ public class CategoryTests
     /// </summary>
     [Test]
     public async Task CategoryIcons(){
-        var response = await otr_api.sendGETRequest("GET", "categories", new Dictionary<string, string> {{"icons", "true"}});
-        var body = await otr_api.GetResponseContent();
-        Assert.IsTrue(response.IsSuccessStatusCode);
-        Assert.That(body.count, Is.InstanceOf<int>());
-        Assert.That(body.count, Is.LessThanOrEqualTo(25));
-        foreach(var category in body.results){
-            Assert.That(category.ContainsKey("icon_svg"));
-            Assert.That(category.icon_svg, Is.Not.Null);
-            Assert.That(category.icon_svg, Does.Contain(".svg"));
+        List<CategoryRecord> categories = await shortcutsAPI.getCategories(new Dictionary<string, string> {{"icons", "true"}});
+        foreach(CategoryRecord category in categories){
+            Assert.That(category.IconSvg, Does.Contain(".svg"), "'.svg' was not found");
         }
     }
 

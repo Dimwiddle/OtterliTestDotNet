@@ -30,7 +30,7 @@ namespace OtterliAPI
         /// <param name="endpoint"></param>
         /// <param name="queryParams"></param>
         /// <returns>HttpResponse</returns>
-        public async Task<HttpResponseMessage> sendGETRequest(string method, string endpoint, Dictionary<string, string> queryParams = null)
+        public async Task<HttpResponseMessage> sendGETRequest(string endpoint, Dictionary<string, string> queryParams = null)
         {
             var queryString = "";
             if (queryParams != null)
@@ -44,14 +44,14 @@ namespace OtterliAPI
             }
                 
             var requestUri = new Uri($"{host}/{endpoint}{queryString}");
-            var request = new HttpRequestMessage(new HttpMethod(method), requestUri);
+            var request = new HttpRequestMessage(new HttpMethod("GET"), requestUri);
             request.Headers.Add("Accept", $"application/json;version={this.version}");
             request.Headers.Authorization = new AuthenticationHeaderValue("Token", this.token);
             var response = await client.SendAsync(request);
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 var retryRequestUri = response.RequestMessage.RequestUri;
-                var retryrequest = new HttpRequestMessage(new HttpMethod(method), retryRequestUri);
+                var retryrequest = new HttpRequestMessage(new HttpMethod("GET"), retryRequestUri);
                 retryrequest.Headers.Add("Accept", $"application/json;version={this.version}");
                 retryrequest.Headers.Authorization = new AuthenticationHeaderValue("Token", this.token);
                 response = await client.SendAsync(retryrequest);

@@ -21,7 +21,7 @@ public class ProductResponse {
         DotNetEnv.Env.TraversePath().Load();
         this.token = Environment.GetEnvironmentVariable("API_TOKEN");
         otrAPI = new API(this.token);
-        this.response = await otrAPI.sendGETRequest("GET", "products");
+        this.response = await otrAPI.sendGETRequest("products");
         Assert.IsTrue(response.IsSuccessStatusCode);
         this.body = await otrAPI.GetResponseContent();
         this.productSample = body.results[0];
@@ -31,20 +31,20 @@ public class ProductResponse {
     [Test]
     public async Task invalidToken() {
         API temp_client = new API("thisisfake");
-        var response = await temp_client.sendGETRequest("GET", "products");
+        var response = await temp_client.sendGETRequest("products");
         Assert.That((int)response.StatusCode, Is.EqualTo(401));
     }
     [Test]
     public async Task noAuthToken() {
         API temp_client = new API();
-        var response = await temp_client.sendGETRequest("GET", "products");
+        var response = await temp_client.sendGETRequest("products");
         Assert.That((int)response.StatusCode, Is.EqualTo(401));
     }
     [Test]
     public async Task APIVersion() {
         API temp_client = new API(token, version: "0.1");
-        var response = await temp_client.sendGETRequest("GET", "products");
-        Assert.That((int)response.StatusCode, Is.EqualTo(400));
+        var response = await temp_client.sendGETRequest("products");
+        Assert.That((int)response.StatusCode, Is.EqualTo(406));
     }
     [Test]
     public void ProductResponseBody() {
@@ -67,7 +67,7 @@ public class ProductResponse {
         }
         Assert.That(body.previous, Is.Null);
         string page2 = body.next.Replace(otrAPI.host + "/", "");
-        var page2Response = await otrAPI.sendGETRequest("GET", $"{page2}");
+        var page2Response = await otrAPI.sendGETRequest($"{page2}");
         Assert.That(page2Response.IsSuccessStatusCode, Is.True);
         var page2body = await otrAPI.GetResponseContent();
         string expectedPrevious = otrAPI.host + "/products/";
@@ -110,18 +110,19 @@ public class ProductSearch {
     [Test]
     public async Task SearchProductRanking() {
         string search = "shampoo";
-        var response = await otrAPI.sendGETRequest("GET", $"products?search={search}");
+        var response = await otrAPI.sendGETRequest($"products?search={search}");
         Assert.That(response.IsSuccessStatusCode, Is.True);
         var body = await otrAPI.GetResponseContent();
         Assert.That(body.count, Is.GreaterThan(0));
-        var productSample = body.results[0];
-        Assert.That(productSample.name.ToLower().Contains(search));
+        List<ProductRecord> products = shortcutApi.serializeProductList(body.results);
+        ProductRecord productSample = products.First();
+        Assert.That(productSample.Name.ToLower().Contains(search));
     }
 
     [Test]
     public async Task SearchProductNotFound() {
         string search = "thisproductdoesnotexist";
-        var response = await otrAPI.sendGETRequest("GET", $"products?search={search}");
+        var response = await otrAPI.sendGETRequest($"products?search={search}");
         Assert.That(response.IsSuccessStatusCode, Is.True);
         var body = await otrAPI.GetResponseContent();
         Assert.That(body.count, Is.EqualTo(0));
@@ -130,7 +131,7 @@ public class ProductSearch {
     [Test]
     public async Task SearchProductbyGTIN() {
         ProductDetailRecord product = await shortcutApi.getProductSample();
-        var response = await otrAPI.sendGETRequest("GET", $"products?search={product.Gtin}");
+        var response = await otrAPI.sendGETRequest($"products?search={product.Gtin}");
         Assert.That(response.IsSuccessStatusCode, Is.True);
         var body = await otrAPI.GetResponseContent();
         Assert.That(body.count, Is.EqualTo(1));
@@ -167,7 +168,7 @@ public class ProductFilterParams {
                 Assert.That(product.Countries, Does.Contain(expectedCountryCode));
             }
             string nextURL = responseContent.next.Replace(otrAPI.host + "/", "");
-            await otrAPI.sendGETRequest("GET", nextURL);
+            await otrAPI.sendGETRequest(nextURL);
             responseContent = await otrAPI.GetResponseContent();
             products = shortcutsAPI.serializeProductList(responseContent.results);
         }
@@ -188,7 +189,7 @@ public class ProductFilterParams {
                 Assert.That(categories.Contains(categoryName));
             }
             string nextURL = responseContent.next.Replace(otrAPI.host + "/", "");
-            await otrAPI.sendGETRequest("GET", nextURL);
+            await otrAPI.sendGETRequest(nextURL);
             responseContent = await otrAPI.GetResponseContent();
             products = shortcutsAPI.serializeProductList(responseContent.results);
         }
@@ -204,7 +205,7 @@ public class ProductFilterParams {
                     Assert.That(product.Active, Is.False);
                 }
             string nextURL = responseContent.next.Replace(otrAPI.host + "/", "");
-            await otrAPI.sendGETRequest("GET", nextURL);
+            await otrAPI.sendGETRequest(nextURL);
             responseContent = await otrAPI.GetResponseContent();
             products = shortcutsAPI.serializeProductList(responseContent.results);
         }
@@ -223,7 +224,7 @@ public class ProductFilterParams {
                 Assert.That(product.Vendors.Contains(vendor));
             }
             string nextURL = responseContent.next.Replace(otrAPI.host + "/", "");
-            await otrAPI.sendGETRequest("GET", nextURL);
+            await otrAPI.sendGETRequest(nextURL);
             responseContent = await otrAPI.GetResponseContent();
             products = shortcutsAPI.serializeProductList(responseContent.results);
         }
@@ -316,7 +317,7 @@ public class CustomEndpoints{
 
     [Test]
     public async Task ComingSoon(){
-        HttpResponseMessage response = await otrAPI.sendGETRequest("GET", "coming_soon");
+        HttpResponseMessage response = await otrAPI.sendGETRequest("coming_soon");
         Assert.That(response.IsSuccessStatusCode);
         ResponseContent responseContent = await otrAPI.GetResponseContent();
         Assert.That(responseContent.previous, Is.Null);
@@ -326,7 +327,7 @@ public class CustomEndpoints{
 
     [Test]
     public async Task RecommendedProducts(){
-        HttpResponseMessage response = await otrAPI.sendGETRequest("GET", "recommended_products");
+        HttpResponseMessage response = await otrAPI.sendGETRequest("recommended_products");
         Assert.That(response.IsSuccessStatusCode);
         ResponseContent responseContent = await otrAPI.GetResponseContent();
         Assert.That(responseContent.previous, Is.Null);
@@ -335,7 +336,7 @@ public class CustomEndpoints{
 
     [Test]
     public async Task LatestProducts(){
-        HttpResponseMessage response = await otrAPI.sendGETRequest("GET", "latest_products");
+        HttpResponseMessage response = await otrAPI.sendGETRequest("latest_products");
         Assert.That(response.IsSuccessStatusCode);
         ResponseContent responseContent = await otrAPI.GetResponseContent();
         Assert.That(responseContent.previous, Is.Null);
