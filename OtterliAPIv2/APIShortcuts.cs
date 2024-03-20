@@ -66,5 +66,24 @@ public class ShortcutsAPI {
         List<ProductRecord> products = JsonConvert.DeserializeObject<List<ProductRecord>>(json);
         return products;
     }
+
+    /// <summary>
+    /// Send the request for the product details 
+    /// </summary>
+    /// <param name="productId"></param>
+    /// <returns>(HttpResponseMessage, ProductDetailRecord)</returns>
+    public async Task<(HttpResponseMessage, ProductDetailRecord)> getProductByID (string productId, int version){
+        string endpoint;
+        if (version == 1){
+            endpoint = $"products/{productId}/";
+        }
+        else {
+            endpoint = $"product_details/{productId}/";
+        }
+        var response = await otr_api.sendGETRequest("GET", endpoint);
+        string json = await response.Content.ReadAsStringAsync();
+        ProductDetailRecord productDetail = JsonConvert.DeserializeObject<ProductDetailRecord>(json);
+        return (response, productDetail);
+    } 
    
 }   

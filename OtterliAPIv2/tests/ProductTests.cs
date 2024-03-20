@@ -177,14 +177,15 @@ public class ProductFilterParams {
     [Test]
     public async Task ByCategory(){
         ProductDetailRecord productSample = await shortcutsAPI.getProductSample();
-        CategoryRecord expectedCategory = productSample.Categories.First();
-        Dictionary<string, string> parameters = new Dictionary<string, string>{{"category", expectedCategory.Id}};
+        string categoryName = productSample.Categories.First();
+        Dictionary<string, string> parameters = new Dictionary<string, string>{{"category", categoryName}};
         ResponseContent responseContent = await shortcutsAPI.getProducts(parameters);
         List<ProductRecord> products = shortcutsAPI.serializeProductList(responseContent.results);
 
         while (responseContent.next != null){
             foreach (ProductRecord product in products){
-                Assert.That(product.Categories.Contains(expectedCategory));
+                List<string> categories =  product.Categories.Select(c => c.Name).ToList();
+                Assert.That(categories.Contains(categoryName));
             }
             string nextURL = responseContent.next.Replace(otrAPI.host + "/", "");
             await otrAPI.sendGETRequest("GET", nextURL);
@@ -340,4 +341,43 @@ public class CustomEndpoints{
         Assert.That(responseContent.previous, Is.Null);
         Assert.That(responseContent.results, Is.Not.Empty);
     }
+}
+
+public class ProductDetails {
+
+    private API otrAPI;
+
+    private ShortcutsAPI shortcutsAPI = new ShortcutsAPI();
+
+    public ProductDetails(){
+
+        DotNetEnv.Env.TraversePath().Load();
+        string token = Environment.GetEnvironmentVariable("API_TOKEN");
+        otrAPI = new API(token);
+    }
+
+    [Test]
+    public async Task ProductDetailsV1(){
+        ProductDetailRecord productSample = await shortcutsAPI.getProductSample();
+        (HttpResponseMessage response, ProductDetailRecord productDetail) = await shortcutsAPI.getProductByID(productSample.Id, 1);
+        Assert.That(response.IsSuccessStatusCode);
+        Assert.That(productDetail.Id, Is.EqualTo(productSample.Id));
+        Assert.That(productDetail.Name, Is.Not.Null, "'name' is null");
+        Assert.That(productDetail.Reviews, Is.Not.Null, "'reviews' is null");
+        Assert.That(productDetail.Vendors, Is.Not.Null.Or.Empty, "'vendors' is null or empty");
+        Assert.That(productDetail.Categories, Is.Not.Null.Or.Empty, "'categories' is null");
+    }
+
+    [Test]
+    public async Task ProductDetailsV2(){
+        ProductDetailRecord productSample = await shortcutsAPI.getProductSample();
+        (HttpResponseMessage response, ProductDetailRecord productDetail) = await shortcutsAPI.getProductByID(productSample.Id, 2);
+        Assert.That(response.IsSuccessStatusCode);
+        Assert.That(productDetail.Id, Is.EqualTo(productSample.Id));
+        Assert.That(productDetail.Name, Is.Not.Null, "'name' is null");
+        Assert.That(productDetail.Reviews, Is.Not.Null, "'reviews' is null");
+        Assert.That(productDetail.Vendors, Is.Not.Null.Or.Empty, "'vendors' is null or empty");
+        Assert.That(productDetail.Categories, Is.Not.Null.Or.Empty, "'categories' is null");
+    }
+
 }
