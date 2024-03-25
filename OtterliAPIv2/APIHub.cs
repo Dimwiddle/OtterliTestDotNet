@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
+using System.Text;
 
 namespace OtterliAPI
 {
@@ -87,26 +88,28 @@ namespace OtterliAPI
             return null;
         }
 
-        // public async Task<HttpResponseMessage> sendPOSTRequest(string endpoint, Dictionary<string, string> data)
-        // {
-        //     var requestUri = new Uri($"{host}/{endpoint}");
-        //     var request = new HttpRequestMessage(new HttpMethod("POST"), requestUri);
-        //     request.Headers.Add("Accept", $"application/json;version={this.version}");
-        //     request.Headers.Authorization = new AuthenticationHeaderValue("Token", this.token);
-        //     request.Content = new FormUrlEncodedContent(data);
-        //     var response = await client.SendAsync(request);
-        //     if (response.StatusCode == HttpStatusCode.Unauthorized)
-        //     {
-        //         var retryRequestUri = response.RequestMessage.RequestUri;
-        //         var retryrequest = new HttpRequestMessage(new HttpMethod("POST"), retryRequestUri);
-        //         retryrequest.Headers.Add("Accept", $"application/json;version={this.version}");
-        //         retryrequest.Headers.Authorization = new AuthenticationHeaderValue("Token", this.token);
-        //         retryrequest.Content = new FormUrlEncodedContent(data);
-        //         response = await client.SendAsync(retryrequest);
-        //     }
-        //     this.response = response;
-        //     return response;
-        // }
+        public async Task<(HttpResponseMessage, JsonObject)> sendPOSTRequest(string endpoint, JsonObject data){
+            var requestUri = new Uri($"{host}/{endpoint}");
+            var request = new HttpRequestMessage(new HttpMethod("POST"), requestUri);
+            request.Headers.Add("Accept", $"application/json;version={this.version}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Token", this.token);
+            string json = data.ToString();
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+            request.Content = content;
+            var response = await client.SendAsync(request);
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                var retryRequestUri = response.RequestMessage.RequestUri;
+                var retryrequest = new HttpRequestMessage(new HttpMethod("POST"), retryRequestUri);
+                retryrequest.Headers.Add("Accept", $"application/json;version={this.version}");
+                retryrequest.Headers.Authorization = new AuthenticationHeaderValue("Token", this.token);
+                retryrequest.Content = content;
+                response = await client.SendAsync(retryrequest);
+            }
+            this.response = response;
+            var contentOut = await response.Content.ReadFromJsonAsync<JsonObject>();
+            return (response, contentOut);
+        }
 
         public async Task<JsonObject> getSummaryStats(){
             HttpResponseMessage response = await sendGETRequest("object_stats");

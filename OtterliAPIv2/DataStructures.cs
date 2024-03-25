@@ -64,3 +64,37 @@ public record VendorRecord (
     [JsonProperty("logo_svg")] string? LogoSvg,
     [JsonProperty("country")] string Country
 );
+
+public record FeedbackRecordOut (
+    [JsonProperty("id")] string? Id,
+    [JsonProperty("useful")] bool? Useful,
+    [JsonProperty("found_product")] bool? FoundProduct,
+    [JsonProperty("keep")] string? Keep,
+    [JsonProperty("change")] string? Change,
+    [JsonProperty("recommend_product")] bool? RecommendProduct,
+    [JsonProperty("problem_solved")] int? ProblemSolved,
+    [JsonProperty("age")] int? Age,
+    [JsonProperty("email_address")] string? EmailAddress,
+    [JsonProperty("diet")] string? Diet,
+    [JsonProperty("created_date")] string CreatedDate
+);
+
+public record FeedbackRecordIn (
+    [JsonProperty("useful")] bool? Useful,
+    [JsonProperty("found_product")] bool? FoundProduct,
+    [JsonProperty("keep")] bool? Keep,
+    [JsonProperty("change")] bool? Change,
+    [JsonProperty("recommend_product")] bool? RecommendProduct,
+    [JsonProperty("problem_solved")] int? ProblemSolved,
+    [JsonProperty("age")] int? Age,
+    [JsonProperty("email_address")] string? EmailAddress,
+    [JsonProperty("diet")] string? Diet
+);
+
+public record QuickQuestionRecord (
+    [JsonProperty("id")] int Id,
+    [JsonProperty("question")] string Question,
+    [JsonProperty("display")] bool Display,
+    [JsonProperty("display_from")] string DisplayFrom,
+    [JsonProperty("display_to")] string DisplayTo
+);
