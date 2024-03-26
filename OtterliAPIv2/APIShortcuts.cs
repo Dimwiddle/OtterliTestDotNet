@@ -39,10 +39,11 @@ public class ShortcutsAPI {
     /// </summary>
     /// <returns>object</returns>
     public async Task<ProductDetailRecord> getProductSample(){
-        var response = await this.otr_api.sendGETRequest("products");
+        var response = await this.otr_api.sendGETRequest("products/");
         var body = await this.otr_api.GetResponseContent();
         var product = body.results[0];
-        var productResponse = await this.otr_api.sendGETRequest($"products/{product.id}");
+        string productId =  product.id;
+        HttpResponseMessage productResponse = await this.otr_api.sendGETRequest($"products/{productId}/");
         string productdDetail = await productResponse.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<ProductDetailRecord>(productdDetail);
     }

@@ -104,11 +104,13 @@ public class FeedbackTests{
         Assert.That(quickQuestion.IsSuccessStatusCode);
         ResponseContent content = await otrAPI.GetResponseContent();
         Assert.That(content.results, Is.Not.Null);
+        int questionId = 0;
         if (content.results != null){
             string resultsJson = JsonConvert.SerializeObject(content.results);
             List<QuickQuestionRecord> quickQuestions = JsonConvert.DeserializeObject<List<QuickQuestionRecord>>(resultsJson);
             foreach(QuickQuestionRecord node in quickQuestions){
                 if(node.Display == true){
+                    questionId = node.Id;
                     Assert.That(node.DisplayFrom, Is.Not.Null);
                     Assert.That(node.DisplayTo, Is.Not.Null);
                     Assert.That(node.Question, Is.Not.Null);
@@ -121,6 +123,18 @@ public class FeedbackTests{
                 }
             }
         }
+
+        (HttpResponseMessage response ,JsonObject quickAnswer) = await otrAPI.sendPOSTRequest("quick_feedback/", new JsonObject{
+            ["question_id"] = questionId,
+            ["answer"] = "This is a test answer"
+        });
+        Assert.That(response.StatusCode.ToString(), Is.EqualTo("BadRequest"));
+
+        (HttpResponseMessage response2 ,JsonObject quickAnswer2) = await otrAPI.sendPOSTRequest("quick_feedback/", new JsonObject{
+            ["question"] = questionId,
+            ["feedback"] = "This is a test answer"
+        });
+        Assert.That(response2.IsSuccessStatusCode);
 
     }
 }

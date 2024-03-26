@@ -48,7 +48,7 @@ public record CountryRecord (
 
 public record ProductReviewRecord(
     [JsonProperty("avg_rating")] double? AvgRating,
-    [JsonProperty("rating_count")] int? ReviewCount
+    [JsonProperty("rating_count")] int ReviewCount
 );
 
 public record CategoryRecord (
@@ -97,4 +97,15 @@ public record QuickQuestionRecord (
     [JsonProperty("display")] bool Display,
     [JsonProperty("display_from")] string DisplayFrom,
     [JsonProperty("display_to")] string DisplayTo
+);
+
+public record ReviewRecordOut (
+    [JsonProperty("id")] string Id,
+    [JsonProperty("product")] string Product,
+    [JsonProperty("rating")] int Rating,
+    [JsonProperty("review")] string Review,
+    [JsonProperty("created_date")] string CreatedDate,
+    [JsonProperty("last_updated_date")] string LastUpdatedDate,
+    [JsonProperty("username")] string Username,
+    [JsonProperty("reviewer_ref")] string ReviewerRef
 );
