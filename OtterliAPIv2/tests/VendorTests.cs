@@ -21,7 +21,7 @@ public class VendorTests{
         DotNetEnv.Env.TraversePath().Load();
         this.token = Environment.GetEnvironmentVariable("API_TOKEN");
         otr_api = new API(this.token);
-        this.response = await otr_api.sendGETRequest("GET", "vendors");
+        this.response = await otr_api.sendGETRequest("vendors");
         this.body = await otr_api.GetResponseContent();
         this.vendorSample = body.results[0];
     }
@@ -34,7 +34,7 @@ public class VendorTests{
     public async Task invalidToken()
     {
         API temp_client = new API("thisisfake");
-        var response = await temp_client.sendGETRequest("GET", "vendors");
+        var response = await temp_client.sendGETRequest("vendors");
         Assert.That((int)response.StatusCode, Is.EqualTo(401));
     }
 
@@ -45,7 +45,7 @@ public class VendorTests{
     [Test]
     public async Task noAuthToken(){
         API temp_client = new API();
-        var response = await temp_client.sendGETRequest("GET", "vendors");
+        var response = await temp_client.sendGETRequest("vendors");
         Assert.That((int)response.StatusCode, Is.EqualTo(401));
     }
 
@@ -55,7 +55,7 @@ public class VendorTests{
     [Test]
     public async Task APIVersion(){
         API temp_client = new API(token, version: "0.1");
-        var response = await temp_client.sendGETRequest("GET", "vendors");
+        var response = await temp_client.sendGETRequest("vendors");
         Assert.That((int)response.StatusCode, Is.EqualTo(406));
     }
 
@@ -121,6 +121,6 @@ public class VendorTests{
         // aggregate unique vendor ids
         // get active vendors from /vendors endpoint
         // check that all vendor ids from products are in the active vendors
-        var activeVendorsResponse = await otr_api.sendGETRequest("GET", "vendors", new Dictionary<string, object> {{"active", true}});
+        var activeVendorsResponse = await otr_api.sendGETRequest("vendors", new Dictionary<string, string> {{"active", "true"}});
     }
 }
