@@ -1,4 +1,4 @@
-# Otterli API (Mobile App) 
+# .NET Test Framework for Otterli API (Mobile App) 
 
 Here you will find the automated test suite to execute regression tests against the Otterli API, which feeds the mobile app.
 
